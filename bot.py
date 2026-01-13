@@ -1,0 +1,13 @@
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
+TOKEN = "7946588311:AAHG_BvX6UPhgnlkIL8oTR3nTDc_dF7B8qw"
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Hey Prem 👋 Your personal bot is active!")
+
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+
+app.run_polling(close_loop=False)
+
