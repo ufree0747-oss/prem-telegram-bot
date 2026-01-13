@@ -1,19 +1,16 @@
-from datetime import date
-import json
 import os
+import json
+from datetime import date
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-MY_ID =  6227990433  # replace with your real ID
-
-TOKEN = os.getenv("TOKEN")
-
-async def start(update, context):
-    if update.effective_user.id != MY_ID:
-        return
-    await update.message.reply_text("Hey Prem 👋 Your personal bot is active 24/7!")
+# ===================== CONFIG =====================
+TOKEN = os.getenv("TOKEN")          # Bot token from Render env
+MY_ID =  6227990433                   # 🔴 REPLACE with your Telegram user ID
 DATA_FILE = "data.json"
+# =================================================
 
+# ---------- Data helpers ----------
 def load_data():
     try:
         with open(DATA_FILE, "r") as f:
@@ -24,14 +21,30 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f)
-async def log(update, context):
+
+# ---------- Commands ----------
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MY_ID:
+        return
+    await update.message.reply_text(
+        "Hey Prem 👋 Your personal bot is active 24/7!\n\n"
+        "Commands:\n"
+        "/log <hours>  ➜ Log study time\n"
+        "/today        ➜ See today’s total"
+    )
+
+async def log(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != MY_ID:
+        return
+
+    if not context.args:
+        await update.message.reply_text("Usage: /log 2.5")
         return
 
     try:
         hours = float(context.args[0])
     except:
-        await update.message.reply_text("Usage: /log 2.5")
+        await update.message.reply_text("Please enter a number.\nExample: /log 1.5")
         return
 
     today = str(date.today())
@@ -40,7 +53,8 @@ async def log(update, context):
     save_data(data)
 
     await update.message.reply_text(f"✅ Logged {hours} hours for today!")
-    async def today(update, context):
+
+async def today_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != MY_ID:
         return
 
@@ -50,14 +64,11 @@ async def log(update, context):
 
     await update.message.reply_text(f"📊 Today’s study: {hours} hours")
 
-
-
+# ---------- App setup ----------
 app = ApplicationBuilder().token(TOKEN).build()
+
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("log", log))
-app.add_handler(CommandHandler("today", today))
+app.add_handler(CommandHandler("today", today_cmd))
+
 app.run_polling()
-
-
-
-
